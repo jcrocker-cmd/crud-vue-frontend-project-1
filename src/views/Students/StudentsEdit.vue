@@ -2,7 +2,7 @@
     <div class="container mt-5">
         <div class="card">
             <div class="card-header">
-                <h4>Add Students</h4>
+                <h4>Edit Students</h4>
             </div>
             <div class="card-body">
 
@@ -33,7 +33,7 @@
                 </div>
 
                 <div class="mb-3">
-                    <button type="button" @click="saveStudent" class="btn btn-primary"> Save</button>
+                    <button type="button" @click="updateStudent" class="btn btn-primary"> Update</button>
                 </div>
             </div>
         </div>
@@ -43,9 +43,10 @@
 <script>
 import axios from 'axios';
 export default {
-    name: 'studentCreate',
+    name: 'studentEdit',
     data(){
         return{
+            studentId:'',
             errorList: '',
             model:{
                 student: {
@@ -57,30 +58,57 @@ export default {
             }
         }
     },
-
+    mounted(){
+        // console.log(this.$route.params.id);
+        this.studentId = this.$route.params.id;
+        this.getStudentData(this.$route.params.id);
+    },
     methods: {
-        saveStudent(){
+
+        getStudentData(studentId){
+            axios.get(`http://127.0.0.1:8000/api/students/${studentId}/edit`, this.model.student)
+            .then(res =>{
+                console.log(res.data.student);
+                this.model.student = res.data.student
+            })
+
+                .catch(function (error){
+                    if (error.response) {
+                        if (error.response.status == 404) {
+                            alert(error.response.data.message)
+                        }
+                    }
+                });;
+        },
+        updateStudent(){
             var mythis = this;
-            axios.post('http://127.0.0.1:8000/api/create', this.model.student)
+            axios.put(`http://127.0.0.1:8000/api/students/${this.studentId}/update`, this.model.student)
             .then(res => {
                 console.log(res.data)
                 alert(res.data.message);
 
-                this.model.student = {
-                    name:'',
-                    course:'',
-                    email:'',
-                    phone:'',
-                }
+                this.errorList = '';
             })
                 .catch(function (error){
                     if (error.response) {
                         if (error.response.status == 422) {
                             mythis.errorList = error.response.data.errors;
                         }
+                        if (error.response.status == 404) {
+                            alert(error.response.data.message)
+                        }
+                    // The request was made and the server responded with a status code
+                    // that falls out of the range of 2xx
+                    // console.log(error.response.data);
+                    // console.log(error.response.status);
+                    // console.log(error.response.headers);
                     } else if (error.request) {
+                    // The request was made but no response was received
+                    // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+                    // http.ClientRequest in node.js
                     console.log(error.request);
                     } else {
+                    // Something happened in setting up the request that triggered an Error
                     console.log('Error', error.message);
                     }
             });
