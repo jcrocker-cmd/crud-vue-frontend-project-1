@@ -3,7 +3,7 @@
     <div class="card">
         <div class="card-header">
           <h4>Students
-            <RouterLink to="/create/student" class="btn btn-primary">Add Student</RouterLink>
+            <RouterLink to="/students/create" class="btn btn-primary">Add Student</RouterLink>
           </h4>
         </div>
 
@@ -30,11 +30,11 @@
                 <td>{{ student.created_at }}</td>
 
                 <td>
-                  <RouterLink to="/create/student" class="btn btn-success">
+                  <RouterLink :to="{ path: '/students/'+student.id+'/edit'}" class="btn btn-success">
                     Edit
                   </RouterLink>
 
-                  <button type="button" class="btn btn-danger">
+                  <button type="button"  @click="deleteStudent(student.id)" class="btn btn-danger">
                     Delete
                   </button>
                 </td>
@@ -63,7 +63,7 @@ export default {
       students: []
     }
   },
-  mounted(){
+  mounted(){ 
     this.getStudents();
     // console.log('Success')
     
@@ -75,7 +75,26 @@ export default {
       this.students = res.data.students;
       });
 
+    },
+    deleteStudent(studentId){
+      if (confirm('Are you sure you want to delete this student?')) {
+        // console.log(studentId)
+        axios.delete(`http://localhost:8000/api/students/${studentId}/delete`)
+        .then(res => {
+          alert(res.data.message);
+          this.getStudents();
+        })
+        .catch(function (error){
+          if (error.response) {
+            if (error.response.status == 404) {
+              alert(error.response.data.message)
+            }
+          }
+        });;
+  
+      }
     }
+
   },
 }
 </script>
